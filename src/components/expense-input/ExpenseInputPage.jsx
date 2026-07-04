@@ -71,10 +71,6 @@ function ExpenseInputPage() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="bg-white px-4 py-3 text-center">
-        <span className="rounded-full bg-orange-100 px-4 py-1 text-sm font-bold text-orange-600">支出</span>
-      </div>
-
       <DateNav
         date={date}
         onPrevDay={() => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1))}

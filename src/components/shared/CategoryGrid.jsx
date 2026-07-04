@@ -11,12 +11,12 @@ function Tile({ tile, selected, onClick }) {
       <button
         type="button"
         disabled
-        className="flex flex-col items-center gap-1 rounded-2xl bg-white p-3 opacity-50"
+        className="flex flex-col items-center gap-0.5 rounded-xl bg-white p-1.5 opacity-50"
       >
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
-          <Pencil size={20} />
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+          <Pencil size={14} />
         </span>
-        <span className="text-xs text-gray-500">{label}</span>
+        <span className="text-[10px] text-gray-500">{label}</span>
       </button>
     )
   }
@@ -25,12 +25,12 @@ function Tile({ tile, selected, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center gap-1 rounded-2xl bg-white p-3 ${selected ? `ring-2 ${palette.ring}` : ''}`}
+      className={`flex flex-col items-center gap-0.5 rounded-xl bg-white p-1.5 ${selected ? `ring-2 ${palette.ring}` : ''}`}
     >
-      <span className={`flex h-12 w-12 items-center justify-center rounded-full ${palette.bg} ${palette.text}`}>
-        <Icon size={22} />
+      <span className={`flex h-8 w-8 items-center justify-center rounded-full ${palette.bg} ${palette.text}`}>
+        <Icon size={16} />
       </span>
-      <span className="text-xs text-gray-600">{label}</span>
+      <span className="text-[10px] text-gray-600">{label}</span>
     </button>
   )
 }
@@ -47,7 +47,7 @@ function CategoryGrid({ tiles, selectedBig, selectedSmall, onSelectDirect, onOpe
 
   return (
     <div className="pb-2">
-      <div className="grid grid-cols-4 gap-2 p-3">
+      <div className="grid grid-cols-4 gap-1.5 p-2">
         {visibleTiles.map((tile) => (
           <Tile
             key={tile.key}
