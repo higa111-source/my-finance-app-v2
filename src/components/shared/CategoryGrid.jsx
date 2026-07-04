@@ -13,8 +13,8 @@ function Tile({ tile, selected, onClick }) {
         disabled
         className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-xl bg-white p-1 opacity-50"
       >
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-400">
-          <Pencil size={18} />
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+          <Pencil size={16} />
         </span>
         <span className="text-xs text-gray-500">{label}</span>
       </button>
@@ -27,8 +27,8 @@ function Tile({ tile, selected, onClick }) {
       onClick={onClick}
       className={`flex h-full w-full flex-col items-center justify-center gap-1 rounded-xl bg-white p-1 ${selected ? `ring-2 ${palette.ring}` : ''}`}
     >
-      <span className={`flex h-10 w-10 items-center justify-center rounded-full ${palette.bg} ${palette.text}`}>
-        <Icon size={20} />
+      <span className={`flex h-9 w-9 items-center justify-center rounded-full ${palette.bg} ${palette.text}`}>
+        <Icon size={18} />
       </span>
       <span className="text-xs text-gray-600">{label}</span>
     </button>

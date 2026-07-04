@@ -1,4 +1,4 @@
-const keyClass = 'h-16 rounded-lg border border-gray-200 bg-gray-50 text-3xl font-medium text-gray-700 active:bg-gray-100'
+const keyClass = 'h-14 rounded-lg border border-gray-200 bg-gray-50 text-2xl font-medium text-gray-700 active:bg-gray-100'
 
 function NumericKeypad({ value, onChange, onConfirm }) {
   const appendDigit = (digit) => {
@@ -54,7 +54,7 @@ function NumericKeypad({ value, onChange, onConfirm }) {
         type="button"
         style={{ gridArea: 'ok' }}
         onClick={onConfirm}
-        className="h-16 rounded-lg bg-orange-500 text-2xl font-bold text-white active:bg-orange-600"
+        className="h-full w-full rounded-lg bg-orange-500 text-3xl font-bold text-white active:bg-orange-600"
       >
         確定
       </button>

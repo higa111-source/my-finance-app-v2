@@ -78,7 +78,7 @@ function ExpenseInputPage() {
         onSetDate={setDate}
       />
 
-      <div className="flex items-center gap-2 border-t border-gray-100 bg-white px-4 py-1.5">
+      <div className="flex items-center gap-2 border-t border-gray-100 bg-white px-4 py-3">
         <input
           type="text"
           value={note}
@@ -91,7 +91,7 @@ function ExpenseInputPage() {
         </button>
       </div>
 
-      <div className="border-t border-gray-100 bg-white px-4 py-1.5">
+      <div className="border-t border-gray-100 bg-white px-4 py-3">
         <span className="mr-2 text-sm font-bold text-orange-500">支出</span>
         <span className="text-xl font-bold text-gray-800">
           ¥ {amount ? Number(amount).toLocaleString() : 0}
@@ -116,18 +116,7 @@ function ExpenseInputPage() {
         </div>
       )}
 
-      <div>
-        <NumericKeypad value={amount} onChange={setAmount} onConfirm={handleSubmit} />
-        <div className="px-3 pb-2">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="w-full rounded-xl bg-orange-100 py-2 text-sm font-bold text-orange-500"
-          >
-            支出を入力する
-          </button>
-        </div>
-      </div>
+      <NumericKeypad value={amount} onChange={setAmount} onConfirm={handleSubmit} />
 
       {sheetBigCategory && (
         <CategoryPickerSheet
