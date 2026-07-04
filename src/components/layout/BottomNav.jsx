@@ -18,9 +18,9 @@ function BottomNav({ page, onNavigate }) {
             key={key}
             type="button"
             onClick={() => onNavigate(key)}
-            className={`flex flex-col items-center gap-1 py-2 text-xs ${active ? 'text-white' : 'text-gray-400'}`}
+            className={`flex flex-col items-center gap-0.5 py-1.5 text-[11px] ${active ? 'text-white' : 'text-gray-400'}`}
           >
-            <Icon size={20} strokeWidth={active ? 2.5 : 2} />
+            <Icon size={18} strokeWidth={active ? 2.5 : 2} />
             {label}
           </button>
         )

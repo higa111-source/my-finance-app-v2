@@ -11,12 +11,12 @@ function Tile({ tile, selected, onClick }) {
       <button
         type="button"
         disabled
-        className="flex flex-col items-center gap-0.5 rounded-xl bg-white p-1.5 opacity-50"
+        className="flex flex-col items-center gap-0.5 rounded-xl bg-white p-1 opacity-50"
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400">
-          <Pencil size={14} />
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+          <Pencil size={12} />
         </span>
-        <span className="text-[10px] text-gray-500">{label}</span>
+        <span className="text-[9px] text-gray-500">{label}</span>
       </button>
     )
   }
@@ -25,12 +25,12 @@ function Tile({ tile, selected, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center gap-0.5 rounded-xl bg-white p-1.5 ${selected ? `ring-2 ${palette.ring}` : ''}`}
+      className={`flex flex-col items-center gap-0.5 rounded-xl bg-white p-1 ${selected ? `ring-2 ${palette.ring}` : ''}`}
     >
-      <span className={`flex h-8 w-8 items-center justify-center rounded-full ${palette.bg} ${palette.text}`}>
-        <Icon size={16} />
+      <span className={`flex h-6 w-6 items-center justify-center rounded-full ${palette.bg} ${palette.text}`}>
+        <Icon size={13} />
       </span>
-      <span className="text-[10px] text-gray-600">{label}</span>
+      <span className="text-[9px] text-gray-600">{label}</span>
     </button>
   )
 }
@@ -46,8 +46,8 @@ function CategoryGrid({ tiles, selectedBig, selectedSmall, onSelectDirect, onOpe
       : tile.bigId === selectedBig
 
   return (
-    <div className="pb-2">
-      <div className="grid grid-cols-4 gap-1.5 p-2">
+    <div className="pb-1">
+      <div className="grid grid-cols-4 gap-1 p-1.5">
         {visibleTiles.map((tile) => (
           <Tile
             key={tile.key}
@@ -58,13 +58,13 @@ function CategoryGrid({ tiles, selectedBig, selectedSmall, onSelectDirect, onOpe
         ))}
       </div>
       {pageCount > 1 && (
-        <div className="flex justify-center gap-2 pb-2">
+        <div className="flex justify-center gap-2 pb-1">
           {Array.from({ length: pageCount }).map((_, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setPage(i)}
-              className={`h-2 w-2 rounded-full ${i === page ? 'bg-orange-400' : 'bg-gray-300'}`}
+              className={`h-1.5 w-1.5 rounded-full ${i === page ? 'bg-orange-400' : 'bg-gray-300'}`}
             />
           ))}
         </div>

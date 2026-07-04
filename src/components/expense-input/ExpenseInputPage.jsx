@@ -78,28 +78,28 @@ function ExpenseInputPage() {
         onSetDate={setDate}
       />
 
-      <div className="flex items-center gap-2 border-t border-gray-100 bg-white px-4 py-3">
+      <div className="flex items-center gap-2 border-t border-gray-100 bg-white px-4 py-1.5">
         <input
           type="text"
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="メモ欄"
-          className="w-full flex-1 text-base text-gray-700 placeholder:text-gray-300 focus:outline-none"
+          className="w-full flex-1 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none"
         />
         <button type="button" onClick={() => setNote('')} className="text-gray-300">
-          <X size={18} />
+          <X size={16} />
         </button>
       </div>
 
-      <div className="border-t border-gray-100 bg-white px-4 py-3">
+      <div className="border-t border-gray-100 bg-white px-4 py-1.5">
         <span className="mr-2 text-sm font-bold text-orange-500">支出</span>
-        <span className="text-2xl font-bold text-gray-800">
+        <span className="text-xl font-bold text-gray-800">
           ¥ {amount ? Number(amount).toLocaleString() : 0}
         </span>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-orange-50/40">
-        <div className="px-4 py-2 text-xs font-bold text-gray-400">カテゴリ</div>
+        <div className="px-4 py-1 text-xs font-bold text-gray-400">カテゴリ</div>
 
         <CategoryGrid
           tiles={tiles}
@@ -118,11 +118,11 @@ function ExpenseInputPage() {
 
       <div>
         <NumericKeypad value={amount} onChange={setAmount} onConfirm={handleSubmit} />
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-2">
           <button
             type="button"
             onClick={handleSubmit}
-            className="w-full rounded-xl bg-orange-100 py-3 text-base font-bold text-orange-500"
+            className="w-full rounded-xl bg-orange-100 py-2 text-sm font-bold text-orange-500"
           >
             支出を入力する
           </button>
