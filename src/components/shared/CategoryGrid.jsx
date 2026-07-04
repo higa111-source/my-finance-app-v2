@@ -11,12 +11,12 @@ function Tile({ tile, selected, onClick }) {
       <button
         type="button"
         disabled
-        className="flex flex-col items-center gap-0.5 rounded-xl bg-white p-1 opacity-50"
+        className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-xl bg-white p-1 opacity-50"
       >
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-400">
-          <Pencil size={12} />
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+          <Pencil size={18} />
         </span>
-        <span className="text-[9px] text-gray-500">{label}</span>
+        <span className="text-xs text-gray-500">{label}</span>
       </button>
     )
   }
@@ -25,12 +25,12 @@ function Tile({ tile, selected, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center gap-0.5 rounded-xl bg-white p-1 ${selected ? `ring-2 ${palette.ring}` : ''}`}
+      className={`flex h-full w-full flex-col items-center justify-center gap-1 rounded-xl bg-white p-1 ${selected ? `ring-2 ${palette.ring}` : ''}`}
     >
-      <span className={`flex h-6 w-6 items-center justify-center rounded-full ${palette.bg} ${palette.text}`}>
-        <Icon size={13} />
+      <span className={`flex h-10 w-10 items-center justify-center rounded-full ${palette.bg} ${palette.text}`}>
+        <Icon size={20} />
       </span>
-      <span className="text-[9px] text-gray-600">{label}</span>
+      <span className="text-xs text-gray-600">{label}</span>
     </button>
   )
 }
@@ -45,9 +45,14 @@ function CategoryGrid({ tiles, selectedBig, selectedSmall, onSelectDirect, onOpe
       ? tile.bigId === selectedBig && tile.smallId === selectedSmall
       : tile.bigId === selectedBig
 
+  const rows = Math.max(1, Math.ceil(visibleTiles.length / 4))
+
   return (
-    <div className="pb-1">
-      <div className="grid grid-cols-4 gap-1 p-1.5">
+    <div className="flex h-full flex-col pb-1">
+      <div
+        className="grid flex-1 grid-cols-4 gap-1.5 p-2"
+        style={{ gridTemplateRows: `repeat(${rows}, 1fr)` }}
+      >
         {visibleTiles.map((tile) => (
           <Tile
             key={tile.key}
