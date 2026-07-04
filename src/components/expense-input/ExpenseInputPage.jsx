@@ -70,7 +70,7 @@ function ExpenseInputPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <DateNav
         date={date}
         onPrevDay={() => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1))}
@@ -98,7 +98,7 @@ function ExpenseInputPage() {
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col bg-orange-50/40">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-orange-50/40">
         <div className="px-4 py-2 text-xs font-bold text-gray-400">カテゴリ</div>
 
         <CategoryGrid

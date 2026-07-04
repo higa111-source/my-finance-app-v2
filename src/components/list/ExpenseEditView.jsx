@@ -81,7 +81,7 @@ function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex items-center justify-between bg-white px-4 py-3">
         <button type="button" onClick={onCancel} className="text-sm text-gray-400">キャンセル</button>
         <span className="text-sm font-bold text-gray-600">支出を編集</span>
@@ -117,7 +117,7 @@ function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col bg-orange-50/40">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-orange-50/40">
         <div className="px-4 py-2 text-xs font-bold text-gray-400">カテゴリ</div>
         <CategoryGrid
           tiles={tiles}
