@@ -7,11 +7,12 @@ import { toDateInputValue } from '../../lib/date'
 import DateNav from './DateNav'
 import CategoryGrid from '../shared/CategoryGrid'
 import CategoryPickerSheet from '../shared/CategoryPickerSheet'
+import CategoryManageSheet from '../shared/CategoryManageSheet'
 import NumericKeypad from '../shared/NumericKeypad'
 
 function ExpenseInputPage() {
   const userName = useUserName()
-  const { bigCategories, smallCategoriesByBig, tiles } = useCategoryTiles()
+  const { bigCategories, smallCategoriesByBig, tiles, reload } = useCategoryTiles()
 
   const [date, setDate] = useState(new Date())
   const [note, setNote] = useState('')
@@ -19,6 +20,7 @@ function ExpenseInputPage() {
   const [selectedBig, setSelectedBig] = useState(null)
   const [selectedSmall, setSelectedSmall] = useState(null)
   const [sheetBigId, setSheetBigId] = useState(null)
+  const [manageOpen, setManageOpen] = useState(false)
   const [message, setMessage] = useState('')
 
   const sheetBigCategory = bigCategories.find((bc) => bc.big_category_id === sheetBigId)
@@ -36,6 +38,14 @@ function ExpenseInputPage() {
     setSelectedBig(sheetBigId)
     setSelectedSmall(smallId)
     setSheetBigId(null)
+  }
+
+  // 選択中の小カテゴリが削除されたら選択を解除する
+  const handleCategoryDeleted = (smallId) => {
+    if (smallId === selectedSmall) {
+      setSelectedBig(null)
+      setSelectedSmall(null)
+    }
   }
 
   const handleSubmit = async () => {
@@ -107,6 +117,7 @@ function ExpenseInputPage() {
           selectedSmall={selectedSmall}
           onSelectDirect={handleSelectDirect}
           onOpenGroup={handleOpenGroup}
+          onManage={() => setManageOpen(true)}
         />
       </div>
 
@@ -124,6 +135,16 @@ function ExpenseInputPage() {
           smallCategories={smallCategoriesByBig[sheetBigId] || []}
           onSelect={handlePickFromSheet}
           onClose={() => setSheetBigId(null)}
+        />
+      )}
+
+      {manageOpen && (
+        <CategoryManageSheet
+          bigCategories={bigCategories}
+          smallCategoriesByBig={smallCategoriesByBig}
+          onChanged={reload}
+          onDeleted={handleCategoryDeleted}
+          onClose={() => setManageOpen(false)}
         />
       )}
     </div>

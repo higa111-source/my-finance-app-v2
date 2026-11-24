@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { getCategoryVisual } from '../lib/categoryVisuals'
 
@@ -56,6 +56,9 @@ export default function useCategoryTiles() {
   const [bigCategories, setBigCategories] = useState([])
   const [smallCategoriesByBig, setSmallCategoriesByBig] = useState({})
 
+  const [version, setVersion] = useState(0)
+  const reload = useCallback(() => setVersion((v) => v + 1), [])
+
   useEffect(() => {
     async function fetchCategories() {
       try {
@@ -79,9 +82,9 @@ export default function useCategoryTiles() {
       }
     }
     fetchCategories()
-  }, [])
+  }, [version])
 
   const tiles = useMemo(() => buildTiles(bigCategories, smallCategoriesByBig), [bigCategories, smallCategoriesByBig])
 
-  return { bigCategories, smallCategoriesByBig, tiles }
+  return { bigCategories, smallCategoriesByBig, tiles, reload }
 }

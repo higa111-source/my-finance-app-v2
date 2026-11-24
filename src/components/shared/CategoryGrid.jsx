@@ -10,8 +10,9 @@ function Tile({ tile, selected, onClick }) {
     return (
       <button
         type="button"
-        disabled
-        className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-xl bg-white p-1 opacity-50"
+        disabled={!onClick}
+        onClick={onClick}
+        className={`flex h-full w-full flex-col items-center justify-center gap-1 rounded-xl bg-white p-1 ${onClick ? '' : 'opacity-50'}`}
       >
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-400">
           <Pencil size={16} />
@@ -35,9 +36,11 @@ function Tile({ tile, selected, onClick }) {
   )
 }
 
-function CategoryGrid({ tiles, selectedBig, selectedSmall, onSelectDirect, onOpenGroup }) {
-  const [page, setPage] = useState(0)
+function CategoryGrid({ tiles, selectedBig, selectedSmall, onSelectDirect, onOpenGroup, onManage }) {
+  const [pageState, setPage] = useState(0)
   const pageCount = Math.max(1, Math.ceil(tiles.length / PAGE_SIZE))
+  // カテゴリ削除でページ数が減った場合に範囲外にならないようにする
+  const page = Math.min(pageState, pageCount - 1)
   const visibleTiles = tiles.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
 
   const isSelected = (tile) =>
@@ -58,7 +61,13 @@ function CategoryGrid({ tiles, selectedBig, selectedSmall, onSelectDirect, onOpe
             key={tile.key}
             tile={tile}
             selected={isSelected(tile)}
-            onClick={tile.type === 'group' ? () => onOpenGroup(tile) : () => onSelectDirect(tile)}
+            onClick={
+              tile.type === 'manage'
+                ? onManage
+                : tile.type === 'group'
+                  ? () => onOpenGroup(tile)
+                  : () => onSelectDirect(tile)
+            }
           />
         ))}
       </div>
