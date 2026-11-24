@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { buildMonthRange, fetchExpenses } from '../../lib/expenses'
 import { EXPENSE, INCOME, KIND_THEME, formatSigned, kindOfRow, summarize } from '../../lib/kind'
 import SegmentTabs from '../shared/SegmentTabs'
@@ -84,6 +84,15 @@ function ReportPage() {
   const kindRows = useMemo(() => allExpenses.filter((row) => kindOfRow(row) === kind), [allExpenses, kind])
   const chartData = useMemo(() => buildChartData(kindRows), [kindRows])
   const colorOf = (name) => (kind === INCOME ? getIncomeVisual(name).hex : getCategoryVisual(name).palette.hex)
+
+  // 内訳は一覧の下に出るため、見える位置まで動かす
+  const detailRef = useRef(null)
+  useEffect(() => {
+    if (selectedCategory) detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [selectedCategory])
+
+  const chartTotal = chartData.reduce((sum, d) => sum + d.value, 0)
+  const formatPercent = (value) => (chartTotal > 0 ? `${((value / chartTotal) * 100).toFixed(1)}%` : '-')
 
   const changeKind = (next) => {
     setKind(next)
@@ -171,7 +180,7 @@ function ReportPage() {
         <SegmentTabs label="円グラフの種類" options={KIND_OPTIONS} value={kind} onChange={changeKind} />
       </div>
 
-      <div className="bg-white px-2 py-2" style={{ height: 320 }}>
+      <div className="shrink-0 bg-white px-2 py-2" style={{ height: 240 }}>
         {status !== 'ready' ? null : chartData.length === 0 ? (
           <p className="mt-8 text-center text-sm text-gray-400">
             {kind === INCOME ? '収入は登録されていません' : 'データがありません'}
@@ -186,8 +195,6 @@ function ReportPage() {
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
-                // 収入は名前と金額が長く画面端で切れるため、下の一覧に出す
-                label={kind === EXPENSE && (({ name, value }) => `${name}: ${formatAmount(value)}`)}
                 onClick={(entry) => setSelectedCategory(entry.name)}
               >
                 {chartData.map((entry) => (
@@ -195,31 +202,33 @@ function ReportPage() {
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
-              {kind === EXPENSE && <Legend itemSorter={null} />}
             </PieChart>
           </ResponsiveContainer>
         )}
       </div>
 
-      {status === 'ready' && kind === INCOME && chartData.length > 0 && (
+      {/* 名前と金額は円の周りに置くと画面端で切れるため、一覧で出す */}
+      {status === 'ready' && chartData.length > 0 && (
         <div className="flex flex-col bg-white px-4 pb-3">
           {chartData.map(({ name, value }) => (
             <button
               key={name}
               type="button"
               onClick={() => setSelectedCategory(name)}
-              className="flex items-center gap-2 border-t border-gray-100 py-2 text-sm text-gray-700"
+              aria-pressed={name === selectedCategory}
+              className={`flex items-center gap-2 border-t border-gray-100 py-2.5 text-sm text-gray-700 ${name === selectedCategory ? 'bg-gray-100' : ''}`}
             >
               <span className="h-3 w-3 shrink-0 rounded-sm" style={{ backgroundColor: colorOf(name) }} />
-              <span className="flex-1 text-left">{name}</span>
-              <span className="font-bold">{formatAmount(value)}</span>
+              <span className="min-w-0 flex-1 text-left">{name}</span>
+              <span className="w-14 shrink-0 text-right text-xs text-gray-500">{formatPercent(value)}</span>
+              <span className="w-28 shrink-0 text-right font-bold">{formatAmount(value)}</span>
             </button>
           ))}
         </div>
       )}
 
       {selectedCategory && (
-        <div className="px-3 py-2">
+        <div ref={detailRef} className="px-3 py-2">
           <p className="mb-2 text-sm font-bold text-gray-600">{selectedCategory} の内訳</p>
           <div className="overflow-x-auto rounded-lg bg-white">
             <table className="w-full text-left text-xs">
