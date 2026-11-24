@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Pencil } from 'lucide-react'
+import { ChevronUp, Pencil } from 'lucide-react'
 
 const PAGE_SIZE = 12
 
@@ -28,9 +28,20 @@ function Tile({ tile, selected, onClick }) {
       onClick={onClick}
       className={`flex h-full w-full flex-col items-center justify-center gap-1 rounded-xl bg-white p-1 ${selected ? `ring-2 ${palette.ring}` : ''}`}
     >
-      <span className={`flex h-9 w-9 items-center justify-center rounded-full ${palette.bg} ${palette.text}`}>
-        <Icon size={18} />
-      </span>
+      {tile.type === 'group' ? (
+        // 大カテゴリ: 塗りつぶしの角丸四角 + シートが開くことを示すバッジ
+        <span className={`relative flex h-9 w-9 items-center justify-center rounded-lg text-white ${palette.solid}`}>
+          <Icon size={18} />
+          <span className={`absolute -right-1.5 -bottom-1 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow ${palette.text}`}>
+            <ChevronUp size={12} strokeWidth={3} />
+          </span>
+        </span>
+      ) : (
+        // 小カテゴリ: 淡色の丸
+        <span className={`flex h-9 w-9 items-center justify-center rounded-full ${palette.bg} ${palette.text}`}>
+          <Icon size={18} />
+        </span>
+      )}
       <span className="text-xs text-gray-600">{label}</span>
     </button>
   )
