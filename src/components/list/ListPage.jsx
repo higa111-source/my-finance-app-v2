@@ -6,6 +6,11 @@ function ListPage() {
   const [mode, setMode] = useState('list')
   const [editingExpense, setEditingExpense] = useState(null)
   const [reload, setReload] = useState(false)
+  // 編集画面から戻っても条件が残るよう、ここで保持する
+  const [filters, setFilters] = useState(() => {
+    const today = new Date()
+    return { year: today.getFullYear(), month: today.getMonth() + 1, bigId: '', smallId: '', note: '' }
+  })
 
   const handleEdit = (expense) => {
     setEditingExpense(expense)
@@ -28,7 +33,7 @@ function ListPage() {
     )
   }
 
-  return <ExpenseListView reload={reload} onEdit={handleEdit} />
+  return <ExpenseListView reload={reload} filters={filters} onFiltersChange={setFilters} onEdit={handleEdit} />
 }
 
 export default ListPage
