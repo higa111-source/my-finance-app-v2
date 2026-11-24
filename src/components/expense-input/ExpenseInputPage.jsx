@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import useUserName from '../../hooks/useUserName'
@@ -7,17 +7,27 @@ import useAuth from '../../hooks/authContext'
 import { needsLogin } from '../../lib/auth'
 import useCategoryTiles from '../../hooks/useCategoryTiles'
 import { toDateInputValue } from '../../lib/date'
+import { EXPENSE, INCOME, KIND_THEME } from '../../lib/kind'
 import DateNav from './DateNav'
 import CategoryGrid from '../shared/CategoryGrid'
 import CategoryPickerSheet from '../shared/CategoryPickerSheet'
 import CategoryManageSheet from '../shared/CategoryManageSheet'
+import SegmentTabs from '../shared/SegmentTabs'
 import NumericKeypad from '../shared/NumericKeypad'
+
+const KIND_OPTIONS = [EXPENSE, INCOME].map((kind) => ({
+  value: kind,
+  label: KIND_THEME[kind].label,
+  activeClass: KIND_THEME[kind].tab,
+}))
 
 function ExpenseInputPage() {
   const userName = useUserName()
   const { busy, run } = useSubmitLock()
   const { requestLogin } = useAuth()
-  const { bigCategories, smallCategoriesByBig, tiles, reload } = useCategoryTiles()
+  const [kind, setKind] = useState(EXPENSE)
+  const theme = KIND_THEME[kind]
+  const { bigCategories, smallCategoriesByBig, tiles, reload } = useCategoryTiles(kind)
 
   const [date, setDate] = useState(new Date())
   const [note, setNote] = useState('')
@@ -29,6 +39,28 @@ function ExpenseInputPage() {
   const [message, setMessage] = useState('')
 
   const sheetBigCategory = bigCategories.find((bc) => bc.big_category_id === sheetBigId)
+
+  // 日付・メモ・金額は残し、カテゴリの選択だけ解除する
+  const changeKind = (next) => {
+    if (next === kind) return
+    setKind(next)
+    setSelectedBig(null)
+    setSelectedSmall(null)
+    setSheetBigId(null)
+  }
+
+  // 何も入力せずにアプリを離れたら、次に開いたとき支出から始められるようにする
+  useEffect(() => {
+    if (kind === EXPENSE || amount || note || manageOpen) return
+    const handleHidden = () => {
+      if (!document.hidden) return
+      setKind(EXPENSE)
+      setSelectedBig(null)
+      setSelectedSmall(null)
+    }
+    document.addEventListener('visibilitychange', handleHidden)
+    return () => document.removeEventListener('visibilitychange', handleHidden)
+  }, [kind, amount, note, manageOpen])
 
   const handleSelectDirect = (tile) => {
     setSelectedBig(tile.bigId)
@@ -82,11 +114,12 @@ function ExpenseInputPage() {
       setAmount('')
       setSelectedBig(null)
       setSelectedSmall(null)
-      setMessage('✅ 支出を登録しました')
+      setKind(EXPENSE) // 戻し忘れて支出を収入に入れるのを防ぐ
+      setMessage(`✅ ${theme.label}を登録しました`)
       setTimeout(() => setMessage(''), 3000)
       return true
     } catch (err) {
-      console.error('支出登録失敗', err)
+      console.error('登録失敗', err)
       setMessage('❌ 登録に失敗しました')
     }
     setTimeout(() => setMessage(''), 3000)
@@ -95,14 +128,19 @@ function ExpenseInputPage() {
   return (
     // 送信中の入力は登録後に消えてしまうため、完了まで操作を止める
     <div className="flex min-h-0 flex-1 flex-col" inert={busy}>
+      <div className={`px-4 pt-2 ${theme.row}`}>
+        <SegmentTabs label="入力の種類" options={KIND_OPTIONS} value={kind} onChange={changeKind} />
+      </div>
+
       <DateNav
+        className={theme.row}
         date={date}
         onPrevDay={() => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1))}
         onNextDay={() => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1))}
         onSetDate={setDate}
       />
 
-      <div className="flex items-center gap-2 border-t border-gray-100 bg-white px-4 py-3">
+      <div className={`flex items-center gap-2 border-t border-gray-100 px-4 py-3 ${theme.row}`}>
         <input
           type="text"
           value={note}
@@ -115,17 +153,21 @@ function ExpenseInputPage() {
         </button>
       </div>
 
-      <div className="border-t border-gray-100 bg-white px-4 py-3">
-        <span className="mr-2 text-sm font-bold text-orange-500">支出</span>
+      <div className={`border-t border-gray-100 px-4 py-3 ${theme.row}`}>
+        <span className={`mr-2 text-sm font-bold ${theme.text}`}>{theme.label}</span>
         <span className="text-xl font-bold text-gray-800">
           ¥ {amount ? Number(amount).toLocaleString() : 0}
         </span>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-orange-50/40">
-        <div className="px-4 py-1 text-xs font-bold text-gray-400">カテゴリ</div>
+      <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${theme.area}`}>
+        <div className="px-4 py-1 text-xs font-bold text-gray-500">カテゴリ</div>
+        {kind === INCOME && bigCategories.length === 0 && (
+          <p className="px-4 py-2 text-center text-sm text-gray-600">収入カテゴリがまだ登録されていません</p>
+        )}
 
         <CategoryGrid
+          key={kind}
           tiles={tiles}
           selectedBig={selectedBig}
           selectedSmall={selectedSmall}
@@ -141,7 +183,7 @@ function ExpenseInputPage() {
         </div>
       )}
 
-      <NumericKeypad value={amount} onChange={setAmount} onConfirm={handleSubmit} busy={busy} />
+      <NumericKeypad value={amount} onChange={setAmount} onConfirm={handleSubmit} busy={busy} kind={kind} />
 
       {sheetBigCategory && (
         <CategoryPickerSheet

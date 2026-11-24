@@ -6,6 +6,7 @@ import useAuth from '../../hooks/authContext'
 import { needsLogin } from '../../lib/auth'
 import useCategoryTiles from '../../hooks/useCategoryTiles'
 import { toDateInputValue, fromDateInputValue } from '../../lib/date'
+import { KIND_THEME, kindOfRow } from '../../lib/kind'
 import CategoryGrid from '../shared/CategoryGrid'
 import CategoryPickerSheet from '../shared/CategoryPickerSheet'
 import NumericKeypad from '../shared/NumericKeypad'
@@ -13,7 +14,10 @@ import NumericKeypad from '../shared/NumericKeypad'
 function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
   const userName = useUserName()
   const { requestLogin } = useAuth()
-  const { bigCategories, smallCategoriesByBig, tiles } = useCategoryTiles()
+  // 支出と収入の間の付け替えはできないよう、同じ区分のカテゴリだけ出す
+  const kind = kindOfRow(expense)
+  const theme = KIND_THEME[kind]
+  const { bigCategories, smallCategoriesByBig, tiles } = useCategoryTiles(kind)
 
   const [date, setDate] = useState(fromDateInputValue(expense.date))
   const [note, setNote] = useState(expense.note || '')
@@ -98,13 +102,13 @@ function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center justify-between bg-white px-4 py-3">
+      <div className={`flex items-center justify-between px-4 py-3 ${theme.row}`}>
         <button type="button" onClick={onCancel} className="text-sm text-gray-400">キャンセル</button>
-        <span className="text-sm font-bold text-gray-600">支出を編集</span>
+        <span className="text-sm font-bold text-gray-600">{theme.label}を編集</span>
         <button type="button" onClick={handleDelete} className="text-sm text-red-400">削除</button>
       </div>
 
-      <div className="border-t border-gray-100 bg-white px-4 py-3 text-center">
+      <div className={`border-t border-gray-100 px-4 py-3 text-center ${theme.row}`}>
         <input
           type="date"
           value={toDateInputValue(date)}
@@ -113,7 +117,7 @@ function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
         />
       </div>
 
-      <div className="flex items-center gap-2 border-t border-gray-100 bg-white px-4 py-3">
+      <div className={`flex items-center gap-2 border-t border-gray-100 px-4 py-3 ${theme.row}`}>
         <input
           type="text"
           value={note}
@@ -126,14 +130,14 @@ function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
         </button>
       </div>
 
-      <div className="border-t border-gray-100 bg-white px-4 py-3">
-        <span className="mr-2 text-sm font-bold text-orange-500">支出</span>
+      <div className={`border-t border-gray-100 px-4 py-3 ${theme.row}`}>
+        <span className={`mr-2 text-sm font-bold ${theme.text}`}>{theme.label}</span>
         <span className="text-2xl font-bold text-gray-800">
           ¥ {amount ? Number(amount).toLocaleString() : 0}
         </span>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-orange-50/40">
+      <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${theme.area}`}>
         <div className="px-4 py-2 text-xs font-bold text-gray-400">カテゴリ</div>
         <CategoryGrid
           tiles={tiles}
@@ -149,12 +153,12 @@ function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
       )}
 
       <div>
-        <NumericKeypad value={amount} onChange={setAmount} onConfirm={handleSave} />
+        <NumericKeypad value={amount} onChange={setAmount} onConfirm={handleSave} kind={kind} confirmLabel="確定" />
         <div className="px-3 pb-3">
           <button
             type="button"
             onClick={handleSave}
-            className="w-full rounded-xl bg-orange-100 py-3 text-base font-bold text-orange-500"
+            className={`w-full rounded-xl py-3 text-base font-bold ${theme.soft}`}
           >
             保存する
           </button>

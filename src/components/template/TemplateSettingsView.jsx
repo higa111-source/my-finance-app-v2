@@ -4,6 +4,7 @@ import useUserName from '../../hooks/useUserName'
 import useSubmitLock from '../../hooks/useSubmitLock'
 import useAuth from '../../hooks/authContext'
 import { needsLogin } from '../../lib/auth'
+import { EXPENSE, INCOME, KIND_THEME, kindOfRow, toKind } from '../../lib/kind'
 import useCategoryTiles from '../../hooks/useCategoryTiles'
 
 function TemplateSettingsView() {
@@ -29,7 +30,7 @@ function TemplateSettingsView() {
       .from('template_expenses')
       .select(`id, template_name, day_of_month, amount, note, is_active,
         big_category_id, small_category_id,
-        big_category_master (big_category_name),
+        big_category_master (big_category_name, kind),
         small_category_master (small_category_name)`)
       .order('is_active', { ascending: false })
       .order('day_of_month')
@@ -158,8 +159,12 @@ function TemplateSettingsView() {
             className="flex-1 rounded-lg border border-gray-200 px-2 py-1 text-sm"
           >
             <option value="">大カテゴリを選択</option>
-            {bigCategories.map((bc) => (
-              <option key={bc.big_category_id} value={bc.big_category_id}>{bc.big_category_name}</option>
+            {[EXPENSE, INCOME].map((kind) => (
+              <optgroup key={kind} label={KIND_THEME[kind].label}>
+                {bigCategories.filter((bc) => toKind(bc.kind) === kind).map((bc) => (
+                  <option key={bc.big_category_id} value={bc.big_category_id}>{bc.big_category_name}</option>
+                ))}
+              </optgroup>
             ))}
           </select>
           <select
@@ -216,7 +221,7 @@ function TemplateSettingsView() {
               毎月 {t.day_of_month} 日 / {t.big_category_master?.big_category_name || '-'} / {t.small_category_master?.small_category_name || '-'}
             </div>
             <div className="mt-1 flex items-center justify-between">
-              <span className="text-base font-bold text-gray-800">¥{Number(t.amount).toLocaleString()}</span>
+              <span className={`text-base font-bold ${kindOfRow(t) === INCOME ? 'text-blue-600' : 'text-gray-800'}`}>{kindOfRow(t) === INCOME && '+'}¥{Number(t.amount).toLocaleString()}</span>
               <div className="flex gap-2">
                 <button type="button" onClick={() => handleEdit(t)} className="text-xs text-orange-500">編集</button>
                 <button type="button" onClick={() => handleDelete(t.id)} className="text-xs text-red-400">削除</button>

@@ -1,6 +1,11 @@
+import { KIND_THEME, EXPENSE } from '../../lib/kind'
+
 const keyClass = 'h-14 rounded-lg border border-gray-200 bg-gray-50 text-2xl font-medium text-gray-700 active:bg-gray-100'
 
-function NumericKeypad({ value, onChange, onConfirm, busy = false }) {
+function NumericKeypad({ value, onChange, onConfirm, busy = false, kind = EXPENSE, confirmLabel }) {
+  const theme = KIND_THEME[kind]
+  const label = confirmLabel || theme.confirmLabel
+
   const appendDigit = (digit) => {
     onChange(value === '0' ? digit : value + digit)
   }
@@ -20,7 +25,7 @@ function NumericKeypad({ value, onChange, onConfirm, busy = false }) {
 
   return (
     <div
-      className="grid gap-2 p-2"
+      className={`grid gap-2 p-2 ${theme.keypad}`}
       style={{
         gridTemplateColumns: 'repeat(4, 1fr)',
         gridTemplateAreas: `
@@ -55,9 +60,9 @@ function NumericKeypad({ value, onChange, onConfirm, busy = false }) {
         style={{ gridArea: 'ok' }}
         onClick={onConfirm}
         disabled={busy}
-        className={`h-full w-full rounded-lg bg-orange-500 font-bold text-white active:bg-orange-600 disabled:opacity-50 ${busy ? 'text-lg' : 'text-3xl'}`}
+        className={`h-full w-full rounded-lg font-bold text-white disabled:opacity-50 ${theme.button} ${busy ? 'text-lg' : label.length > 2 ? 'px-2 text-xl' : 'text-3xl'}`}
       >
-        {busy ? '登録中…' : '確定'}
+        {busy ? '登録中…' : label}
       </button>
 
       <button type="button" className={keyClass} style={{ gridArea: 'n00' }} onClick={appendDoubleZero}>00</button>

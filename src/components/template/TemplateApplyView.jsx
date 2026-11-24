@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient'
 import useUserName from '../../hooks/useUserName'
 import useSubmitLock from '../../hooks/useSubmitLock'
 import useAuth from '../../hooks/authContext'
+import { EXPENSE, INCOME, KIND_THEME, kindOfRow } from '../../lib/kind'
 import { needsLogin } from '../../lib/auth'
 
 function TemplateApplyView() {
@@ -20,7 +21,7 @@ function TemplateApplyView() {
   const fetchTemplates = useCallback(async () => {
     const { data, error } = await supabase
       .from('template_expenses')
-      .select('id, template_name, day_of_month, amount, note, big_category_id, small_category_id')
+      .select('id, template_name, day_of_month, amount, note, big_category_id, small_category_id, big_category_master (kind)')
       .eq('is_active', true)
       .order('day_of_month')
     if (error) {
@@ -63,10 +64,15 @@ function TemplateApplyView() {
       alert('適用するテンプレートを選択してください')
       return
     }
-    if (!window.confirm(`${year}年${month}月分の支出として計上します。よろしいですか？`)) return
+    const targets = templates.filter((t) => checkedIds.includes(t.id))
+    const counts = [EXPENSE, INCOME]
+      .map((kind) => [KIND_THEME[kind].label, targets.filter((t) => kindOfRow(t) === kind).length])
+      .filter(([, count]) => count > 0)
+      .map(([label, count]) => `${label}${count}件`)
+      .join('・')
+    if (!window.confirm(`${year}年${month}月分として${counts}を計上します。よろしいですか？`)) return
 
-    const records = templates
-      .filter((t) => checkedIds.includes(t.id))
+    const records = targets
       .map((t) => ({
         date: `${year}-${String(month).padStart(2, '0')}-${String(t.day_of_month).padStart(2, '0')}`,
         big_category_id: t.big_category_id,
@@ -126,7 +132,10 @@ function TemplateApplyView() {
             <div key={t.id} className={`rounded-xl bg-white p-3 ${checked ? '' : 'opacity-50'}`}>
               <div className="flex items-center gap-2">
                 <input type="checkbox" checked={checked} onChange={() => toggleCheck(t.id)} />
-                <span className="flex-1 text-sm font-bold text-gray-700">{t.template_name}</span>
+                <span className="flex-1 text-sm font-bold text-gray-700">
+                  {t.template_name}
+                  {kindOfRow(t) === INCOME && <span className="ml-2 rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">収入</span>}
+                </span>
                 <span className="text-xs text-gray-400">毎月{t.day_of_month}日</span>
               </div>
               <div className="mt-2 flex items-center gap-2">

@@ -1,8 +1,8 @@
 import { formatDateJa, toDateInputValue, fromDateInputValue } from '../../lib/date'
 
-function DateNav({ date, onPrevDay, onNextDay, onSetDate }) {
+function DateNav({ date, onPrevDay, onNextDay, onSetDate, className = 'bg-white' }) {
   return (
-    <div className="flex items-center justify-between bg-white px-4 py-3">
+    <div className={`flex items-center justify-between px-4 py-3 ${className}`}>
       <button type="button" onClick={onPrevDay} className="text-sm text-gray-400">
         ← 前日
       </button>

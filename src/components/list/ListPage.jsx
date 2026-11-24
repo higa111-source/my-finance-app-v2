@@ -9,7 +9,7 @@ function ListPage() {
   // 編集画面から戻っても条件が残るよう、ここで保持する
   const [filters, setFilters] = useState(() => {
     const today = new Date()
-    return { year: today.getFullYear(), month: today.getMonth() + 1, bigId: '', smallId: '', note: '' }
+    return { year: today.getFullYear(), month: today.getMonth() + 1, kind: '', bigId: '', smallId: '', note: '' }
   })
 
   const handleEdit = (expense) => {

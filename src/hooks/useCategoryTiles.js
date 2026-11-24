@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabaseClient'
-import { getCategoryVisual } from '../lib/categoryVisuals'
+import { getCategoryVisual, getIncomeVisual } from '../lib/categoryVisuals'
+import { INCOME, toKind } from '../lib/kind'
 import useAuth from './authContext'
 
 const CACHE_KEY = 'categoryCache'
@@ -68,14 +69,15 @@ function buildTiles(bigCategories, smallCategoriesByBig) {
     }
 
     for (const sc of smalls) {
+      const { icon, palette } = toKind(bc.kind) === INCOME ? getIncomeVisual(sc.small_category_name) : visual
       directTiles.push({
         key: `d-${sc.small_category_id}`,
         type: 'direct',
         label: sc.small_category_name,
         bigId: bc.big_category_id,
         smallId: sc.small_category_id,
-        icon: visual.icon,
-        palette: visual.palette,
+        icon,
+        palette,
       })
     }
   }
@@ -83,9 +85,10 @@ function buildTiles(bigCategories, smallCategoriesByBig) {
   return [...directTiles, ...groupTiles, { key: 'manage', type: 'manage', label: '編集' }]
 }
 
-export default function useCategoryTiles() {
+// kind を渡すと、その区分の大カテゴリとタイルだけを返す
+export default function useCategoryTiles(kind = null) {
   const { loggedIn } = useAuth()
-  const [bigCategories, setBigCategories] = useState(() => readCache().big)
+  const [allBigCategories, setBigCategories] = useState(() => readCache().big)
   const [smallCategoriesByBig, setSmallCategoriesByBig] = useState(() => groupByBig(readCache().small))
 
   const [version, setVersion] = useState(0)
@@ -95,7 +98,7 @@ export default function useCategoryTiles() {
     async function fetchCategories() {
       try {
         const [{ data: bigData, error: bigError }, { data: smallData, error: smallError }] = await Promise.all([
-          supabase.from('big_category_master').select('big_category_id, big_category_name').order('big_category_id'),
+          supabase.from('big_category_master').select('big_category_id, big_category_name, kind').order('big_category_id'),
           supabase.from('small_category_master').select('small_category_id, big_category_id, small_category_name').order('big_category_id, small_category_id'),
         ])
         if (bigError) throw bigError
@@ -114,6 +117,10 @@ export default function useCategoryTiles() {
     fetchCategories()
   }, [version, loggedIn])
 
+  const bigCategories = useMemo(
+    () => (kind ? allBigCategories.filter((bc) => toKind(bc.kind) === kind) : allBigCategories),
+    [allBigCategories, kind]
+  )
   const tiles = useMemo(() => buildTiles(bigCategories, smallCategoriesByBig), [bigCategories, smallCategoriesByBig])
 
   return { bigCategories, smallCategoriesByBig, tiles, reload }
