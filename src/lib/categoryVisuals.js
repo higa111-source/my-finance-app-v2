@@ -13,8 +13,8 @@ const bigCategoryVisuals = {
   'インフラ': { icon: Home, colorKey: 'slate', mode: 'group' },
   '食費': { icon: UtensilsCrossed, colorKey: 'orange', mode: 'direct' },
   '日用品': { icon: ShoppingBag, colorKey: 'emerald', mode: 'direct' },
-  '趣味・娯楽': { icon: Gamepad2, colorKey: 'violet', mode: 'direct' },
-  '交際': { icon: Users, colorKey: 'pink', mode: 'direct' },
+  '趣味・娯楽': { icon: Gamepad2, colorKey: 'violet', mode: 'group' },
+  '交際': { icon: Users, colorKey: 'pink', mode: 'group' },
 }
 
 const defaultVisual = { icon: Tag, colorKey: 'gray', mode: 'direct' }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Pencil } from 'lucide-react'
 
 const PAGE_SIZE = 12
@@ -37,38 +37,61 @@ function Tile({ tile, selected, onClick }) {
 }
 
 function CategoryGrid({ tiles, selectedBig, selectedSmall, onSelectDirect, onOpenGroup, onManage }) {
+  const scrollRef = useRef(null)
   const [pageState, setPage] = useState(0)
   const pageCount = Math.max(1, Math.ceil(tiles.length / PAGE_SIZE))
   // カテゴリ削除でページ数が減った場合に範囲外にならないようにする
   const page = Math.min(pageState, pageCount - 1)
-  const visibleTiles = tiles.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
+  const pages = Array.from({ length: pageCount }, (_, i) =>
+    tiles.slice(i * PAGE_SIZE, (i + 1) * PAGE_SIZE)
+  )
+
+  const handleScroll = (e) => {
+    const { scrollLeft, clientWidth } = e.currentTarget
+    if (clientWidth > 0) setPage(Math.round(scrollLeft / clientWidth))
+  }
+
+  const goToPage = (i) => {
+    const el = scrollRef.current
+    el?.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' })
+  }
 
   const isSelected = (tile) =>
     tile.type === 'direct'
       ? tile.bigId === selectedBig && tile.smallId === selectedSmall
       : tile.bigId === selectedBig
 
-  const rows = Math.max(1, Math.ceil(visibleTiles.length / 4))
+  // 全ページで行数を揃え、スワイプ時にタイルの高さが変わらないようにする
+  const rows = Math.max(1, Math.ceil(pages[0].length / 4))
 
   return (
     <div className="flex h-full flex-col pb-1">
       <div
-        className="grid flex-1 grid-cols-4 gap-1.5 p-2"
-        style={{ gridTemplateRows: `repeat(${rows}, 1fr)` }}
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex shrink-0 grow snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {visibleTiles.map((tile) => (
-          <Tile
-            key={tile.key}
-            tile={tile}
-            selected={isSelected(tile)}
-            onClick={
-              tile.type === 'manage'
-                ? onManage
-                : tile.type === 'group'
-                  ? () => onOpenGroup(tile)
-                  : () => onSelectDirect(tile)
-            }
-          />
+        {pages.map((pageTiles, i) => (
+          <div
+            key={i}
+            className="grid w-full shrink-0 snap-start snap-always grid-cols-4 gap-1.5 p-2"
+            style={{ gridTemplateRows: `repeat(${rows}, 1fr)` }}
+          >
+            {pageTiles.map((tile) => (
+              <Tile
+                key={tile.key}
+                tile={tile}
+                selected={isSelected(tile)}
+                onClick={
+                  tile.type === 'manage'
+                    ? onManage
+                    : tile.type === 'group'
+                      ? () => onOpenGroup(tile)
+                      : () => onSelectDirect(tile)
+                }
+              />
+            ))}
+          </div>
         ))}
       </div>
       {pageCount > 1 && (
@@ -77,7 +100,8 @@ function CategoryGrid({ tiles, selectedBig, selectedSmall, onSelectDirect, onOpe
             <button
               key={i}
               type="button"
-              onClick={() => setPage(i)}
+              onClick={() => goToPage(i)}
+              aria-label={`${i + 1}ページ目を表示`}
               className={`h-1.5 w-1.5 rounded-full ${i === page ? 'bg-orange-400' : 'bg-gray-300'}`}
             />
           ))}
