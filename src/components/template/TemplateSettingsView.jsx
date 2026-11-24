@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import useUserName from '../../hooks/useUserName'
+import useSubmitLock from '../../hooks/useSubmitLock'
 import useAuth from '../../hooks/authContext'
 import { needsLogin } from '../../lib/auth'
 import useCategoryTiles from '../../hooks/useCategoryTiles'
 
 function TemplateSettingsView() {
   const userName = useUserName()
+  const { busy, run } = useSubmitLock()
   const { loggedIn, email, requestLogin, logout } = useAuth()
   const { bigCategories, smallCategoriesByBig } = useCategoryTiles()
 
@@ -59,7 +61,9 @@ function TemplateSettingsView() {
     setEditingId(null)
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => run(submitTemplate)
+
+  const submitTemplate = async () => {
     if (!templateName || !bigCategory || !amount) {
       alert('テンプレート名・大カテゴリ・金額は必須です')
       return
@@ -91,6 +95,7 @@ function TemplateSettingsView() {
     }
     clearForm()
     fetchTemplates()
+    return true
   }
 
   const handleEdit = (t) => {
@@ -187,7 +192,7 @@ function TemplateSettingsView() {
           有効
         </label>
         <div className="flex gap-2">
-          <button type="button" onClick={handleSubmit} className="flex-1 rounded-lg bg-orange-100 py-2 text-sm font-bold text-orange-600">
+          <button type="button" onClick={handleSubmit} disabled={busy} className="disabled:opacity-50 flex-1 rounded-lg bg-orange-100 py-2 text-sm font-bold text-orange-600">
             {editingId ? '更新' : '追加'}
           </button>
           {editingId && (

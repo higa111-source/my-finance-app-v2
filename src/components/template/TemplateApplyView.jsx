@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import useUserName from '../../hooks/useUserName'
+import useSubmitLock from '../../hooks/useSubmitLock'
 import useAuth from '../../hooks/authContext'
 import { needsLogin } from '../../lib/auth'
 
 function TemplateApplyView() {
   const userName = useUserName()
+  const { busy, run } = useSubmitLock()
   const { loggedIn, requestLogin } = useAuth()
   const today = new Date()
 
@@ -56,7 +58,7 @@ function TemplateApplyView() {
     setCheckedIds((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]))
   }
 
-  const handleApply = async () => {
+  const handleApply = () => {
     if (checkedIds.length === 0) {
       alert('適用するテンプレートを選択してください')
       return
@@ -75,13 +77,13 @@ function TemplateApplyView() {
         last_updated_by: userName,
       }))
 
-    await insertRecords(records)
+    run(() => insertRecords(records))
   }
 
   const insertRecords = async (records) => {
     const { error } = await supabase.from('expenses').insert(records)
     if (needsLogin(error)) {
-      requestLogin(() => insertRecords(records))
+      requestLogin(() => run(() => insertRecords(records)))
       return
     }
     if (error) {
@@ -91,6 +93,7 @@ function TemplateApplyView() {
     }
     setEditedAmounts({})
     alert('テンプレートを計上しました')
+    return true
   }
 
   return (
@@ -142,7 +145,7 @@ function TemplateApplyView() {
       </div>
 
       <div className="mt-auto px-3 pb-3">
-        <button type="button" onClick={handleApply} className="w-full rounded-xl bg-orange-100 py-3 text-base font-bold text-orange-500">
+        <button type="button" onClick={handleApply} disabled={busy} className="disabled:opacity-50 w-full rounded-xl bg-orange-100 py-3 text-base font-bold text-orange-500">
           {year}年{month}月分として計上する
         </button>
       </div>

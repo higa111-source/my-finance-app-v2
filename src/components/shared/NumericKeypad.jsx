@@ -1,6 +1,6 @@
 const keyClass = 'h-14 rounded-lg border border-gray-200 bg-gray-50 text-2xl font-medium text-gray-700 active:bg-gray-100'
 
-function NumericKeypad({ value, onChange, onConfirm }) {
+function NumericKeypad({ value, onChange, onConfirm, busy = false }) {
   const appendDigit = (digit) => {
     onChange(value === '0' ? digit : value + digit)
   }
@@ -54,9 +54,10 @@ function NumericKeypad({ value, onChange, onConfirm }) {
         type="button"
         style={{ gridArea: 'ok' }}
         onClick={onConfirm}
-        className="h-full w-full rounded-lg bg-orange-500 text-3xl font-bold text-white active:bg-orange-600"
+        disabled={busy}
+        className={`h-full w-full rounded-lg bg-orange-500 font-bold text-white active:bg-orange-600 disabled:opacity-50 ${busy ? 'text-lg' : 'text-3xl'}`}
       >
-        確定
+        {busy ? '登録中…' : '確定'}
       </button>
 
       <button type="button" className={keyClass} style={{ gridArea: 'n00' }} onClick={appendDoubleZero}>00</button>

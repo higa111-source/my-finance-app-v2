@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import useUserName from '../../hooks/useUserName'
+import useSubmitLock from '../../hooks/useSubmitLock'
 import useAuth from '../../hooks/authContext'
 import { needsLogin } from '../../lib/auth'
 import useCategoryTiles from '../../hooks/useCategoryTiles'
@@ -14,6 +15,7 @@ import NumericKeypad from '../shared/NumericKeypad'
 
 function ExpenseInputPage() {
   const userName = useUserName()
+  const { busy, run } = useSubmitLock()
   const { requestLogin } = useAuth()
   const { bigCategories, smallCategoriesByBig, tiles, reload } = useCategoryTiles()
 
@@ -51,7 +53,9 @@ function ExpenseInputPage() {
     }
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => run(submitExpense)
+
+  const submitExpense = async () => {
     if (!selectedBig || !amount) {
       setMessage('❌ カテゴリと金額は必須です')
       setTimeout(() => setMessage(''), 3000)
@@ -79,6 +83,8 @@ function ExpenseInputPage() {
       setSelectedBig(null)
       setSelectedSmall(null)
       setMessage('✅ 支出を登録しました')
+      setTimeout(() => setMessage(''), 3000)
+      return true
     } catch (err) {
       console.error('支出登録失敗', err)
       setMessage('❌ 登録に失敗しました')
@@ -87,7 +93,8 @@ function ExpenseInputPage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    // 送信中の入力は登録後に消えてしまうため、完了まで操作を止める
+    <div className="flex min-h-0 flex-1 flex-col" inert={busy}>
       <DateNav
         date={date}
         onPrevDay={() => setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1))}
@@ -134,7 +141,7 @@ function ExpenseInputPage() {
         </div>
       )}
 
-      <NumericKeypad value={amount} onChange={setAmount} onConfirm={handleSubmit} />
+      <NumericKeypad value={amount} onChange={setAmount} onConfirm={handleSubmit} busy={busy} />
 
       {sheetBigCategory && (
         <CategoryPickerSheet
