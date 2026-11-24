@@ -24,3 +24,9 @@ body {
   background: #f5f1e8;
   overflow: hidden;
 }
+
+/* iPhone は文字が16px未満の入力欄を選ぶと画面をズームし、戻さない。
+   レイヤー外に書き、text-sm などの指定より優先させる */
+input, select, textarea {
+  font-size: 16px;
+}

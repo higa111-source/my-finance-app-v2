@@ -122,6 +122,11 @@ function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
           type="text"
           value={note}
           onChange={(e) => setNote(e.target.value)}
+          onKeyDown={(e) => {
+            // 変換確定の Enter では閉じない
+            if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229) e.currentTarget.blur()
+          }}
+          enterKeyHint="done"
           placeholder="メモ欄"
           className="w-full flex-1 text-base text-gray-700 placeholder:text-gray-300 focus:outline-none"
         />
