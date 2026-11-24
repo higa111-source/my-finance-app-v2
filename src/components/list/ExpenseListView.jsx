@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Search, X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import useCategoryTiles from '../../hooks/useCategoryTiles'
+import useAuth from '../../hooks/authContext'
 import { fromDateInputValue } from '../../lib/date'
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
@@ -46,6 +47,7 @@ const normalize = (text) => (text || '').normalize('NFKC').toLowerCase()
 
 function ExpenseListView({ reload, filters, onFiltersChange, onEdit }) {
   const { year, month, bigId, smallId, note } = filters
+  const { loggedIn } = useAuth()
   const { bigCategories, smallCategoriesByBig } = useCategoryTiles()
   const [expenses, setExpenses] = useState([])
   const [status, setStatus] = useState('loading') // 'loading' | 'ready' | 'error'
@@ -76,7 +78,7 @@ function ExpenseListView({ reload, filters, onFiltersChange, onEdit }) {
     load()
 
     return () => { cancelled = true }
-  }, [reload, year, month])
+  }, [reload, year, month, loggedIn])
 
   const visibleExpenses = useMemo(() => {
     const words = normalize(note).split(/\s+/).filter(Boolean)

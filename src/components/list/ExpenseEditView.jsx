@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import useUserName from '../../hooks/useUserName'
+import useAuth from '../../hooks/authContext'
+import { needsLogin } from '../../lib/auth'
 import useCategoryTiles from '../../hooks/useCategoryTiles'
 import { toDateInputValue, fromDateInputValue } from '../../lib/date'
 import CategoryGrid from '../shared/CategoryGrid'
@@ -10,6 +12,7 @@ import NumericKeypad from '../shared/NumericKeypad'
 
 function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
   const userName = useUserName()
+  const { requestLogin } = useAuth()
   const { bigCategories, smallCategoriesByBig, tiles } = useCategoryTiles()
 
   const [date, setDate] = useState(fromDateInputValue(expense.date))
@@ -43,7 +46,7 @@ function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
       setTimeout(() => setMessage(''), 3000)
       return
     }
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('expenses')
       .update({
         date: toDateInputValue(date),
@@ -54,8 +57,13 @@ function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
         last_updated_by: userName,
       })
       .eq('id', expense.id)
+      .select('id')
 
-    if (error) {
+    if (needsLogin(error, data)) {
+      requestLogin(handleSave)
+      return
+    }
+    if (error || data.length === 0) {
       console.error('更新失敗', error)
       setMessage('❌ 更新に失敗しました')
       setTimeout(() => setMessage(''), 3000)
@@ -64,14 +72,22 @@ function ExpenseEditView({ expense, onCancel, onSaved, onDeleted }) {
     onSaved()
   }
 
-  const handleDelete = async () => {
-    if (!window.confirm('本当に削除しますか？')) return
-    const { error } = await supabase
+  const handleDelete = () => {
+    if (window.confirm('本当に削除しますか？')) deleteExpense()
+  }
+
+  const deleteExpense = async () => {
+    const { data, error } = await supabase
       .from('expenses')
       .update({ delete_flg: true })
       .eq('id', expense.id)
+      .select('id')
 
-    if (error) {
+    if (needsLogin(error, data)) {
+      requestLogin(deleteExpense)
+      return
+    }
+    if (error || data.length === 0) {
       console.error('削除失敗', error)
       setMessage('❌ 削除に失敗しました')
       setTimeout(() => setMessage(''), 3000)

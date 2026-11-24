@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import useUserName from '../../hooks/useUserName'
+import useAuth from '../../hooks/authContext'
+import { needsLogin } from '../../lib/auth'
 
 function TemplateApplyView() {
   const userName = useUserName()
+  const { loggedIn, requestLogin } = useAuth()
   const today = new Date()
 
   const [year, setYear] = useState(today.getFullYear())
@@ -28,7 +31,7 @@ function TemplateApplyView() {
 
   useEffect(() => {
     fetchTemplates()
-  }, [fetchTemplates])
+  }, [fetchTemplates, loggedIn])
 
   const isEdited = Object.keys(editedAmounts).length > 0
 
@@ -72,7 +75,15 @@ function TemplateApplyView() {
         last_updated_by: userName,
       }))
 
+    await insertRecords(records)
+  }
+
+  const insertRecords = async (records) => {
     const { error } = await supabase.from('expenses').insert(records)
+    if (needsLogin(error)) {
+      requestLogin(() => insertRecords(records))
+      return
+    }
     if (error) {
       console.error('テンプレート計上失敗', error)
       alert('計上に失敗しました')

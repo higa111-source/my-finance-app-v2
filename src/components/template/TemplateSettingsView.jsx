@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import useUserName from '../../hooks/useUserName'
+import useAuth from '../../hooks/authContext'
+import { needsLogin } from '../../lib/auth'
 import useCategoryTiles from '../../hooks/useCategoryTiles'
 
 function TemplateSettingsView() {
   const userName = useUserName()
+  const { loggedIn, email, requestLogin, logout } = useAuth()
   const { bigCategories, smallCategoriesByBig } = useCategoryTiles()
 
   const [templates, setTemplates] = useState([])
@@ -37,7 +40,7 @@ function TemplateSettingsView() {
 
   useEffect(() => {
     fetchTemplates()
-  }, [])
+  }, [loggedIn])
 
   useEffect(() => {
     if (editingId) return
@@ -73,11 +76,15 @@ function TemplateSettingsView() {
       last_updated_by: userName,
     }
 
-    const { error } = editingId
-      ? await supabase.from('template_expenses').update(payload).eq('id', editingId)
-      : await supabase.from('template_expenses').insert([{ ...payload, created_by: userName }])
+    const { data, error } = editingId
+      ? await supabase.from('template_expenses').update(payload).eq('id', editingId).select('id')
+      : await supabase.from('template_expenses').insert([{ ...payload, created_by: userName }]).select('id')
 
-    if (error) {
+    if (needsLogin(error, data)) {
+      requestLogin(handleSubmit)
+      return
+    }
+    if (error || data.length === 0) {
       console.error('テンプレート保存失敗', error)
       alert('保存に失敗しました')
       return
@@ -97,11 +104,19 @@ function TemplateSettingsView() {
     setEditingId(t.id)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('本当に削除しますか？')) return
-    const { error } = await supabase.from('template_expenses').delete().eq('id', id)
-    if (error) {
+  const handleDelete = (id) => {
+    if (window.confirm('本当に削除しますか？')) deleteTemplate(id)
+  }
+
+  const deleteTemplate = async (id) => {
+    const { data, error } = await supabase.from('template_expenses').delete().eq('id', id).select('id')
+    if (needsLogin(error, data)) {
+      requestLogin(() => deleteTemplate(id))
+      return
+    }
+    if (error || data.length === 0) {
       console.error('テンプレート削除失敗', error)
+      alert('削除に失敗しました')
       return
     }
     fetchTemplates()
@@ -205,6 +220,19 @@ function TemplateSettingsView() {
           </div>
         ))}
       </div>
+
+      {loggedIn && (
+        <div className="flex items-center justify-between px-4 py-4 text-xs text-gray-400">
+          <span className="truncate">ログイン中{email && `: ${email}`}</span>
+          <button
+            type="button"
+            onClick={() => window.confirm('この端末からログアウトしますか？') && logout()}
+            className="shrink-0 px-2 py-1 underline"
+          >
+            ログアウト
+          </button>
+        </div>
+      )}
     </div>
   )
 }

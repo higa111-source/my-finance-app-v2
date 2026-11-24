@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
 import useUserName from '../../hooks/useUserName'
+import useAuth from '../../hooks/authContext'
+import { needsLogin } from '../../lib/auth'
 import useCategoryTiles from '../../hooks/useCategoryTiles'
 import { toDateInputValue } from '../../lib/date'
 import DateNav from './DateNav'
@@ -12,6 +14,7 @@ import NumericKeypad from '../shared/NumericKeypad'
 
 function ExpenseInputPage() {
   const userName = useUserName()
+  const { requestLogin } = useAuth()
   const { bigCategories, smallCategoriesByBig, tiles, reload } = useCategoryTiles()
 
   const [date, setDate] = useState(new Date())
@@ -65,6 +68,10 @@ function ExpenseInputPage() {
         created_by: userName,
         last_updated_by: userName,
       }])
+      if (needsLogin(error)) {
+        requestLogin(handleSubmit)
+        return
+      }
       if (error) throw error
 
       setNote('')

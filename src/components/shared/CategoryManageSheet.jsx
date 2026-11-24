@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { X, Pencil, Trash2, Plus, Check } from 'lucide-react'
 import { supabase } from '../../supabaseClient'
+import useAuth from '../../hooks/authContext'
+import { needsLogin } from '../../lib/auth'
 import { getCategoryVisual } from '../../lib/categoryVisuals'
 
 // 小カテゴリIDは「大カテゴリID×100 + 連番」の採番ルール。
@@ -19,6 +21,7 @@ function nextSmallCategoryId(bigId, smallCategoriesByBig) {
 
 function CategoryManageSheet({ bigCategories, smallCategoriesByBig, onChanged, onDeleted, onClose }) {
   // editing: { type: 'rename', smallId } | { type: 'add', bigId } | null
+  const { requestLogin } = useAuth()
   const [editing, setEditing] = useState(null)
   const [inputValue, setInputValue] = useState('')
   const [busy, setBusy] = useState(false)
@@ -81,6 +84,10 @@ function CategoryManageSheet({ bigCategories, smallCategoriesByBig, onChanged, o
           .eq('small_category_id', editing.smallId)
           .select()
 
+      if (needsLogin(error, data)) {
+        requestLogin()
+        return
+      }
       if (error) throw error
       if (!data || data.length === 0) throw new Error('変更が反映されませんでした（権限設定を確認してください）')
 
@@ -124,6 +131,10 @@ function CategoryManageSheet({ bigCategories, smallCategoriesByBig, onChanged, o
         .delete()
         .eq('small_category_id', sc.small_category_id)
         .select()
+      if (needsLogin(error, data)) {
+        requestLogin()
+        return
+      }
       if (error) throw error
       if (!data || data.length === 0) throw new Error('削除が反映されませんでした（権限設定を確認してください）')
 

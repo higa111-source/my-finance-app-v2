@@ -1,6 +1,37 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { getCategoryVisual } from '../lib/categoryVisuals'
+import useAuth from './authContext'
+
+const CACHE_KEY = 'categoryCache'
+
+// 前回のカテゴリを端末から読み、通信を待たずに入力できるようにする
+function readCache() {
+  try {
+    const cache = JSON.parse(localStorage.getItem(CACHE_KEY))
+    if (Array.isArray(cache?.big) && Array.isArray(cache?.small)) return cache
+  } catch {
+    // 壊れている・使えない場合はキャッシュなしとして扱う
+  }
+  return { big: [], small: [] }
+}
+
+function writeCache(big, small) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ big, small }))
+  } catch {
+    // 保存できなくても動作に支障はない
+  }
+}
+
+function groupByBig(smallCategories) {
+  const grouped = {}
+  for (const sc of smallCategories) {
+    if (!grouped[sc.big_category_id]) grouped[sc.big_category_id] = []
+    grouped[sc.big_category_id].push(sc)
+  }
+  return grouped
+}
 
 function buildTiles(bigCategories, smallCategoriesByBig) {
   const directTiles = []
@@ -53,8 +84,9 @@ function buildTiles(bigCategories, smallCategoriesByBig) {
 }
 
 export default function useCategoryTiles() {
-  const [bigCategories, setBigCategories] = useState([])
-  const [smallCategoriesByBig, setSmallCategoriesByBig] = useState({})
+  const { loggedIn } = useAuth()
+  const [bigCategories, setBigCategories] = useState(() => readCache().big)
+  const [smallCategoriesByBig, setSmallCategoriesByBig] = useState(() => groupByBig(readCache().small))
 
   const [version, setVersion] = useState(0)
   const reload = useCallback(() => setVersion((v) => v + 1), [])
@@ -69,20 +101,18 @@ export default function useCategoryTiles() {
         if (bigError) throw bigError
         if (smallError) throw smallError
 
-        setBigCategories(bigData || [])
+        // 未ログインだと0件で返るため、前回のカテゴリを残す
+        if (!bigData || bigData.length === 0) return
 
-        const grouped = {}
-        for (const sc of smallData || []) {
-          if (!grouped[sc.big_category_id]) grouped[sc.big_category_id] = []
-          grouped[sc.big_category_id].push(sc)
-        }
-        setSmallCategoriesByBig(grouped)
+        setBigCategories(bigData)
+        setSmallCategoriesByBig(groupByBig(smallData || []))
+        writeCache(bigData, smallData || [])
       } catch (err) {
         console.error('カテゴリ取得失敗', err)
       }
     }
     fetchCategories()
-  }, [version])
+  }, [version, loggedIn])
 
   const tiles = useMemo(() => buildTiles(bigCategories, smallCategoriesByBig), [bigCategories, smallCategoriesByBig])
 
