@@ -23,8 +23,6 @@ npm run dev
 
 ## デプロイ
 
-```
-npm run deploy
-```
+`master` ブランチに push すると、GitHub Actions（`.github/workflows/deploy.yml`）が自動でビルドし、[GitHub Pages](https://higa111-source.github.io/my-finance-app-v2/) に公開します。
 
-[GitHub Pages](https://higa111-source.github.io/my-finance-app-v2/) に公開されます。
+手動で再デプロイしたいときは、GitHub の Actions タブで「Deploy to GitHub Pages」を選び、「Run workflow」を実行してください。
